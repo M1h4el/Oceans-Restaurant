@@ -1,0 +1,26 @@
+@use './variables';
+@use './mixins';
+
+:root {
+  font-family: variables.$font-family;
+  line-height: variables.$line-height;
+  font-weight: variables.$font-weight-normal;
+  color-scheme: light dark;
+  color: variables.$dark-text;
+  background-color: variables.$dark-bg;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}

@@ -1,0 +1,37 @@
+@use './variables';
+@use './mixins';
+@use './reset';
+
+a {
+  font-weight: variables.$font-weight-medium;
+  color: variables.$primary-color;
+  text-decoration: inherit;
+  &:hover {
+    color: variables.$primary-hover;
+  }
+}
+
+button {
+  @include mixins.button-styles;
+  background-color: #1a1a1a;
+  &:hover {
+    border-color: variables.$primary-color;
+  }
+  &:focus,
+  &:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: variables.$light-text;
+    background-color: variables.$light-bg;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}

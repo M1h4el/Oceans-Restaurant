@@ -1,0 +1,17 @@
+@use "../../styles/mixins" as m;
+
+.menu {
+  @include m.flexing(row, flex-start, center);
+  margin: 0px 80px 100px 80px;
+  flex-wrap: wrap;
+  gap: 42px;
+}
+
+.container {
+  padding: 20px;
+}
+
+.filterContainer {
+  margin: 0 0 60px 80px;
+  width: 800px;
+}

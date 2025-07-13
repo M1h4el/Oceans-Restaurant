@@ -1,0 +1,17 @@
+@use "../../styles/mixins" as m;
+
+.cont_container {
+    @include m.flexing(row, center, center);
+    min-height: calc(100vh - 200px);
+    width: 100%;
+    padding: 90px 0;
+    .logo {
+        @include m.flexing(row, center, center);
+        height: 400px;
+        width: 60%;
+    }
+    .register_form {
+        @include m.flexing(column, center, center);
+        flex: 1;
+    }
+}

@@ -1,0 +1,15 @@
+@use '../../styles/mixins' as m;
+
+.container {
+    @include m.flexing(column, center, center);
+    background-color: rgb(139, 150, 161);
+    width: 400px;
+    height: 500px;
+    border-radius: 20px;
+    .fields {
+        @include m.flexing(column, center, center);
+        .title {
+            margin-bottom: 40px;
+        }
+    }
+}
