@@ -1,31 +1,128 @@
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, Typography, IconButton } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "./LogBar.module.scss";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { fetchData } from "../../utils/fetchData";
 import { GetUserDTO } from "../../dtos/Users/GetUserDTO";
 
 function LogBar() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState<GetUserDTO>({
+    email: "",
+    password: ""
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const dto = new GetUserDTO(email, password);
-    console.log(1111111, dto);
-    window.location.href = '/dashboard';
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetchData<{
+        user: {
+          id: number;
+          user_name: string;
+          email: string;
+          rol: string;
+        };
+        token: string;
+      }>('/auth/login', {
+        method: 'POST',
+        body: formData
+      });
+
+      localStorage.setItem('authToken', response.data.token);
+      navigate('/dashboard');
+
+    } catch (err: any) {
+      console.error('Error en login:', err);
+      setError(err.response?.data?.error || 'Credenciales incorrectas');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
     <div className={styles.Logbar}>
-      <div className={styles.Logo}>Logo</div>
+      <div className={styles.Logo}>
+        <Typography variant="h6" component="div">
+          Logo
+        </Typography>
+      </div>
+      
       <div className={styles.menu_buttons}>
         <Box 
-          component='form'
+          component="form"
           onSubmit={handleSubmit}
-          sx={{ display: 'flex', flexDirection: 'row', gap: 5, marginRight: 5}}
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'row', 
+            gap: 2, 
+            alignItems: 'center',
+            marginRight: 2
+          }}
         >
-          <TextField label='Email' value={email} onChange={(e) => setEmail(e.target.value)}/>
-          <TextField label='Contraseña' value={password} onChange={(e) => setPassword(e.target.value)}/>
-          <Button type="submit" variant="contained">Sign In</Button>
+          {error && (
+            <Typography color="error" sx={{ mr: 2 }}>
+              {error}
+            </Typography>
+          )}
+          
+          <TextField
+            label="Email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            size="small"
+            // Alternativa para autoComplete sin inputProps
+            autoComplete="email"
+          />
+          
+          <TextField
+            label="Contraseña"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={formData.password}
+            onChange={handleChange}
+            required
+            size="small"
+            autoComplete="current-password"
+            // Implementación alternativa para el icono de visibilidad
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  edge="end"
+                  size="small"
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              ),
+            }}
+          />
+          
+          <Button 
+            type="submit" 
+            variant="contained"
+            disabled={isLoading}
+            size="medium"
+          >
+            {isLoading ? 'Ingresando...' : 'Sign In'}
+          </Button>
         </Box>
       </div>
     </div>

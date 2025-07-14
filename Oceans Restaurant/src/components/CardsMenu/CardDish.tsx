@@ -33,7 +33,6 @@ const CardDish: React.FC<CardDishProps> = ({ dish }) => {
     window.addEventListener("storage", handleCartUpdate);
     window.addEventListener("cartUpdated", handleCartUpdate);
 
-    // Limpieza al desmontar
     return () => {
       window.removeEventListener("storage", handleCartUpdate);
       window.removeEventListener("cartUpdated", handleCartUpdate);

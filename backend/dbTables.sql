@@ -1,0 +1,38 @@
+CREATE TABLE invoices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  status_id INT NOT NULL,
+  created_at VARCHAR(100) NOT NULL,
+  descripcion TEXT,
+  total DECIMAL(10, 2) NOT NULL
+);
+
+CREATE TABLE invoicesDetails (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  quantity INT NOT NULL,
+  unit_price DECIMAL(10, 2) NOT NULL,
+  total_price DECIMAL(10, 2) NOT NULL
+);
+
+CREATE TABLE usersRES (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_name VARCHAR(100) NOT NULL,
+  email VARCHAR(50) NOT NULL,
+  rol VARCHAR(10) NOT NULL,
+  active TINYINT(1) NOT NULL
+);
+
+CREATE TABLE products (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL,
+  code VARCHAR(50) NOT NULL,
+  description VARCHAR(50) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  image VARCHAR(300) NOT NULL,
+  active TINYINT(1) NOT NULL
+);
+
+CREATE TABLE orderStatus (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  status VARCHAR(50) NOT NULL
+);

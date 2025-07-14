@@ -1,0 +1,14 @@
+.previewContainer {
+  position: relative;
+  margin: 16px 0;
+}
+
+.deleteButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.7);
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+}

@@ -1,13 +1,28 @@
-import { Navigate, Outlet } from 'react-router-dom';
-
-// ⚠️ Este ejemplo usa una verificación ficticia, podrías usar un contexto o un hook real
-const isAuthenticated = (): boolean => {
-  return true /* localStorage.getItem('token') !== null */;
-};
+// src/components/ProtectedRoute.tsx
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../Context/AuthContext';
 
 export default function ProtectedRoute() {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+
+  if (isLoading) {
+    return <div>Cargando...</div>;
   }
+
+  if (!isAuthenticated) {
+    return (
+      <Navigate 
+        to="/login" 
+        replace 
+        state={{ 
+          from: location,
+          message: 'Por favor inicia sesión para acceder a esta página',
+          search: location.search
+        }} 
+      />
+    );
+  }
+
   return <Outlet />;
 }

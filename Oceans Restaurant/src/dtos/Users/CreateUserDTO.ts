@@ -1,14 +1,15 @@
 export class CreateUserDTO {
-  name: string;
+  username: string;
   email: string;
   password: string;
+  rol: string = 'seller';
 
-  constructor(name: string, email: string, password: string) {
-    if (!name || !email || !password) {
+  constructor(username: string, email: string, password: string) {
+    if (!username || !email || !password) {
       throw new Error('Todos los campos son obligatorios');
     }
 
-    this.name = name;
+    this.username = username;
     this.email = email;
     this.password = password;
   }
