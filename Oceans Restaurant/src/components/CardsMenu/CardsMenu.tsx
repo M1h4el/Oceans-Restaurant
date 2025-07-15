@@ -1,26 +1,112 @@
-import * as React from 'react';
-import CardDish from './CardDish';
-import styles from './CardsMenu.module.scss';
-import { dishes } from '../../utils/dishes';
-import { Autocomplete, TextField, Chip } from '@mui/material';
+import { useState, useEffect, useMemo } from "react";
+import CardDish from "./CardDish";
+import styles from "./CardsMenu.module.scss";
+import { Autocomplete, TextField, Chip, Button } from "@mui/material";
+import { GenericModal } from "../Modal/Modal";
+import { ProductForm } from "../Modal/ProductForm";
+import { fetchData } from "../../utils/fetchData";
+import type { Dish } from "../../types/dishes";
+import type { BaseData } from "../../types/baseData"
+
+type GetMenuResponse = {
+  success: boolean;
+  data: Dish[];
+};
+
+type ApiResponse = {
+  status: number;
+  data: GetMenuResponse | { message: string };
+};
 
 function CardsMenu() {
-  const [selectedTitles, setSelectedTitles] = React.useState<string[]>([]);
+  const [dishes, setDishes] = useState<Dish[]>([]);
+  const [selectedTitles, setSelectedTitles] = useState<string[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false)
 
-  // Obtener todos los títulos únicos de los platos
-  const dishTitles = [...new Set(dishes.map(dish => dish.name))];
+  const dishTitles = useMemo(
+    () => [...new Set(dishes.map((dish) => dish.name))],
+    [dishes]
+  );
+  const filteredDishes = useMemo(
+    () =>
+      selectedTitles.length > 0
+        ? dishes.filter((dish) => selectedTitles.includes(dish.name))
+        : dishes,
+    [dishes, selectedTitles]
+  );
 
-  // Filtrar platos basados en títulos seleccionados
-  const filteredDishes = selectedTitles.length > 0
-    ? dishes.filter(dish => selectedTitles.includes(dish.name))
-    : dishes;
+  useEffect(() => {
+    const getDishes = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetchData<GetMenuResponse>("/menu/", {
+          method: "GET",
+        });
+
+        if (res.data && Array.isArray(res.data.data)) {
+          setDishes(res.data.data);
+        } else {
+          console.error("La respuesta no tiene el formato esperado", res.data);
+        }
+      } catch (error) {
+        console.error("Error al cargar platos:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getDishes();
+  }, []);
+
+  const handleEditingModeOn = () => {
+    setIsEditing(true);
+  }
+
+  const handleEditingModeOff = () => {
+    setIsEditing(false);
+  }
+
+  const handleSubmit = async (productData: BaseData) => {
+    try {
+      setIsLoading(true);
+      const response = await fetchData<ApiResponse>("/menu/", {
+        method: "POST",
+        body: productData,
+      });
+
+      if (response.status >= 400) {
+        const errorMessage =
+          typeof response.data === "object" &&
+          response.data !== null &&
+          "message" in response.data
+            ? (response.data as { message: string }).message
+            : "Error al crear producto";
+        throw new Error(errorMessage);
+      }
+
+      const updatedRes = await fetchData<GetMenuResponse>("/menu/", {
+        method: "GET",
+      });
+      if (updatedRes.data && Array.isArray(updatedRes.data.data)) {
+        setDishes(updatedRes.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+      setIsModalOpen(false);
+    }
+  };
 
   return (
     <div className={styles.container}>
-      {/* Autocomplete para filtrar por título */}
       <div className={styles.filterContainer}>
         <Autocomplete
+          sx={{ width: '800px' }}
           multiple
+          disabled={isLoading}
           options={dishTitles}
           value={selectedTitles}
           onChange={(_, newValues) => setSelectedTitles(newValues)}
@@ -34,22 +120,61 @@ function CardsMenu() {
           )}
           renderTags={(value, getTagProps) =>
             value.map((title, index) => (
-              <Chip
-                label={title}
-                {...getTagProps({ index })}
-                key={title}
-              />
+              <Chip label={title} {...getTagProps({ index })} key={title} />
             ))
           }
         />
+        <div className={styles.list_buttons}>
+          <div className={styles.div_button}>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => setIsModalOpen(true)}
+              disabled={isLoading || isEditing}
+            >
+              Agregar Producto
+            </Button>
+          </div>
+          <div>
+            <Button
+            variant="contained"
+            color="primary"
+            disabled={isEditing}
+            onClick={handleEditingModeOn}
+            >
+              Modo edición
+            </Button>
+          </div>
+          <div>
+            <Button
+            variant="contained"
+            color="error"
+            disabled={!isEditing}
+            onClick={handleEditingModeOff}
+            >
+              Cancelar
+            </Button>
+          </div>
+        </div>
+
+        <GenericModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Nuevo Producto"
+        >
+          <ProductForm onSubmit={handleSubmit} type="POST"/>
+        </GenericModal>
       </div>
 
-      {/* Mostrar cards filtradas */}
-      <div className={styles.menu}>
-        {filteredDishes.map((dish) => (
-          <CardDish key={dish.id} dish={dish} />
-        ))}
-      </div>
+      {isLoading && dishes.length === 0 ? (
+        <div>Cargando...</div>
+      ) : (
+        <div className={styles.menu}>
+          {filteredDishes.map((dish) => (
+            <CardDish key={`${dish.id}-${dish.name}`} dish={dish} isEditing={isEditing}/>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

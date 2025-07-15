@@ -19,7 +19,6 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
     });
   }
 
-  // Añadir el ID del usuario al request
   (req as any).user = { id: decoded.id };
   next();
 };

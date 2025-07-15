@@ -9,9 +9,23 @@
 
 .container {
   padding: 20px;
-}
-
-.filterContainer {
-  margin: 0 0 60px 80px;
-  width: 800px;
+  width: 100%;
+  box-sizing: border-box;
+  .filterContainer {
+    @include m.flexing(row, space-between, center);
+    flex: 1;
+    gap: 40px;
+    margin: 0 0 60px 80px;
+    .list_buttons {
+      @include m.flexing(row, center, center);
+      height: 100%;
+      gap: 50px;
+      margin-right: 60px;
+      .div_button {
+        @include m.flexing(row, center, center);
+        width: auto;
+        height: 100%;
+      }
+    }
+  }
 }

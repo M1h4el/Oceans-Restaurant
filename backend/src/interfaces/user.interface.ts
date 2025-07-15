@@ -3,14 +3,14 @@ export interface User {
   user_name: string;
   email: string;
   rol: string;
-  active: 0 | 1; // Representación numérica del estado
+  active: 0 | 1;
 }
 
 export interface RegisterUserDto {
   username: string;
   email: string;
   password: string;
-  rol?: string; // Opcional (se asignará un valor por defecto si no se proporciona)
+  rol?: string;
 }
 
 export interface LoginUserDto {

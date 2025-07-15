@@ -3,8 +3,8 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import styles from "./LogBar.module.scss";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchData } from "../../utils/fetchData";
 import { GetUserDTO } from "../../dtos/Users/GetUserDTO";
+import { fetchData } from "../../utils/fetchData";
 
 function LogBar() {
   const [formData, setFormData] = useState<GetUserDTO>({
@@ -42,6 +42,8 @@ function LogBar() {
         method: 'POST',
         body: formData
       });
+
+      console.log("response", response)
 
       localStorage.setItem('authToken', response.data.token);
       navigate('/dashboard');
@@ -88,7 +90,6 @@ function LogBar() {
             onChange={handleChange}
             required
             size="small"
-            // Alternativa para autoComplete sin inputProps
             autoComplete="email"
           />
           
@@ -101,7 +102,6 @@ function LogBar() {
             required
             size="small"
             autoComplete="current-password"
-            // Implementación alternativa para el icono de visibilidad
             InputProps={{
               endAdornment: (
                 <IconButton

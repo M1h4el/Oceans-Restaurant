@@ -3,12 +3,14 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../Context/AuthContext';
 
 export default function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return <div>Cargando...</div>;
   }
+
+    /* const isAuthenticated = true; */
 
   if (!isAuthenticated) {
     return (

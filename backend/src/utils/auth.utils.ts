@@ -5,15 +5,22 @@ dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
 
-export function generateJWT(userId: number): string {
-  return jwt.sign({ id: userId }, JWT_SECRET, {
-    expiresIn: '24h'
-  });
+interface JwtPayload {
+  id: string;
+  email: string;
 }
 
-export function verifyJWT(token: string): { id: number } | null {
+export function generateJWT(user: { id: string; email: string }): string {
+  return jwt.sign(
+    { id: user.id.toString(), email: user.email },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+}
+
+export function verifyJWT(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { id: number };
+    return jwt.verify(token, JWT_SECRET) as JwtPayload;
   } catch (error) {
     return null;
   }

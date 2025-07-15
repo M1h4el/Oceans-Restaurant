@@ -5,6 +5,8 @@ import {
   CreateInvoiceDto,
   InvoiceWithDetails,
 } from "../interfaces/invoice.interface";
+import dayjs from "dayjs";
+import type { InvoiceResponse } from "../interfaces/GetAllInvoicesType";
 
 class InvoiceModel {
   async createInvoice(
@@ -15,22 +17,22 @@ class InvoiceModel {
     try {
       await connection.beginTransaction();
 
-      // Valor por defecto para status (1 = "pendiente" o similar)
-      const statusId = invoiceData.status_id || 1;
+      const statusId = invoiceData.status_id || 2;
 
-      // 1. Crear la factura principal con el status proporcionado o el por defecto
+      const mysqlDate = dayjs().format("YYYY-MM-DD HH:mm:ss");
+
       const [invoiceResult] = await connection.query(
         "INSERT INTO invoices (status_id, created_at, descripcion, total) VALUES (?, ?, ?, 0)",
-        [statusId, new Date().toISOString(), invoiceData.descripcion]
+        [statusId, mysqlDate, invoiceData.descripcion]
       );
 
       const invoiceId = (invoiceResult as any).insertId;
+      console.log(invoiceId);
       let total = 0;
 
-      // Resto del método permanece igual...
       for (const item of invoiceData.items) {
         const [product] = await connection.query(
-          "SELECT price FROM products WHERE id = ? AND active = TRUE",
+          "SELECT price FROM products WHERE id = ? AND active = 1",
           [item.product_id]
         );
 
@@ -88,51 +90,77 @@ class InvoiceModel {
     };
   }
 
-  async getAllInvoices(): Promise<InvoiceWithDetails[]> {
+  async getAllInvoices(): Promise<InvoiceResponse[]> {
     try {
-      // 1. Obtener facturas con desestructuración segura
-      const [invoices] = await db.query(
-        "SELECT * FROM invoices ORDER BY created_at DESC"
-      );
+      const rows = await db.query(`
+        SELECT 
+        i.id AS invoice_id,
+        i.created_at,
+        i.total,
+        i.status_id,
+        p.id AS product_id,
+        p.name AS product_name,
+        p.code AS product_code,
+        idet.quantity,
+        idet.unit_price,
+        idet.total_price
+      FROM invoices i
+      JOIN invoicesDetails idet ON idet.invoice_id = i.id
+      JOIN products p ON p.id = idet.product_id
+      ORDER BY i.id, idet.id
+    `);
 
-      // Validación de resultados
-      if (!Array.isArray(invoices)) {
-        console.error("La consulta no devolvió un array:", invoices);
+      console.log("rows type:", typeof rows);
+      console.log("rows isArray:", Array.isArray(rows));
+      console.log("rows:", rows);
+
+      if (!Array.isArray(rows)) {
+        console.error("La consulta no devolvió un array:", rows);
         return [];
       }
 
-      // 2. Usar Promise.all para paralelizar las consultas de detalles
-      const invoicesWithDetails = await Promise.all(
-        (invoices as Invoice[]).map(async (invoice) => {
-          try {
-            const [details] = await db.query(
-              "SELECT * FROM invoicesDetails WHERE invoice_id = ?",
-              [invoice.id]
-            );
+      const invoiceMap = new Map<number, InvoiceResponse>();
 
-            return {
-              ...invoice,
-              details: Array.isArray(details)
-                ? (details as InvoiceDetail[])
-                : [],
-            };
-          } catch (error) {
-            console.error(
-              `Error obteniendo detalles para factura ${invoice.id}:`,
-              error
-            );
-            return {
-              ...invoice,
-              details: [],
-            };
-          }
-        })
-      );
+      for (const row of rows) {
+        if (!invoiceMap.has(row.invoice_id)) {
+          invoiceMap.set(row.invoice_id, {
+            id: row.invoice_id,
+            createdAt: new Date(row.created_at).toISOString(),
+            order_status: mapStatus(row.status_id),
+            items: [],
+            total: row.total,
+          });
+        }
 
-      return invoicesWithDetails;
+        const invoice = invoiceMap.get(row.invoice_id)!;
+
+        invoice.items.push({
+          product_id: row.product_id,
+          code: row.product_code,
+          name: row.product_name,
+          quantity: row.quantity,
+          unit_price: row.unit_price,
+          total_price: row.total_price,
+        });
+      }
+
+      function mapStatus(statusId: number): string {
+        switch (statusId) {
+          case 1:
+            return "Entregado";
+          case 2:
+            return "En preparación";
+          case 3:
+            return "Cancelado";
+          default:
+            return "En preparación";
+        }
+      }
+
+      return Array.from(invoiceMap.values());
     } catch (error) {
       console.error("Error en getAllInvoices:", error);
-      throw error; // O return []; si prefieres manejar el error silenciosamente
+      throw error;
     }
   }
 
@@ -151,7 +179,6 @@ class InvoiceModel {
     try {
       await connection.beginTransaction();
 
-      // Eliminar detalles primero
       await connection.query(
         "DELETE FROM invoicesDetails WHERE invoice_id = ?",
         [id]

@@ -4,24 +4,30 @@ import {
   Button,
   Stack
 } from '@mui/material';
+import type {BaseData} from '../../types/baseData'
 import ImageUploader from '../ImageUploader/ImageUploader';
 
-interface ProductFormProps {
-  onSubmit: (data: {
-    name: string;
-    description: string;
-    price: string;
-    imageUrl: string;
-  }) => void;
-}
+type ProductFormProps =
+  | {
+      type: "POST";
+      onSubmit: (data: BaseData) => void;
+    }
+  | {
+      type: "PUT";
+      initialData: Partial<BaseData>;
+      onSubmit: (data: Partial<BaseData>) => void;
+    };
 
-export const ProductForm: React.FC<ProductFormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    imageUrl: ''
+export const ProductForm: React.FC<ProductFormProps> = (props) => {
+  const isPost = props.type === "POST";
+
+  const [formData, setFormData] = useState<BaseData>({
+    name: isPost ? '' : props.initialData.name || '',
+    description: isPost ? '' : props.initialData.description || '',
+    price: isPost ? 0 : props.initialData.price ?? 0,
+    image: isPost ? '' : props.initialData.image || ''
   });
+
   const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,19 +36,25 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSubmit }) => {
   };
 
   const handleImageUpload = (url: string) => {
-    console.log('URL de imagen subida a Firebase:', url); // ← Aquí verás la URL
-    setFormData(prev => ({ ...prev, imageUrl: url }));
-    setIsUploading(false); // ← Importante: Desactivar estado de carga
+    setFormData(prev => ({ ...prev, image: url }));
+    setIsUploading(false);
   };
 
   const handleUploadStart = () => {
-    setIsUploading(true); // ← Activar al comenzar subida
+    setIsUploading(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Datos a enviar al backend:', formData); // ← Verás todos los datos incluida la URL
-    onSubmit(formData);
+
+    if (isPost) {
+      props.onSubmit(formData);
+    } else {
+      const partialData = Object.fromEntries(
+        Object.entries(formData).filter(([_, v]) => v !== '')
+      );
+      props.onSubmit(partialData);
+    }
   };
 
   return (
@@ -54,7 +66,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSubmit }) => {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          required
+          required={isPost}
         />
 
         <TextField
@@ -65,7 +77,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSubmit }) => {
           onChange={handleChange}
           multiline
           rows={3}
-          required
+          required={isPost}
         />
 
         <TextField
@@ -77,18 +89,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({ onSubmit }) => {
           onChange={handleChange}
           InputProps={{ startAdornment: '$' }}
           inputProps={{ min: 0, step: 0.01 }}
-          required
+          required={isPost}
         />
 
         <ImageUploader 
           onUploadComplete={handleImageUpload}
-          onUploadStart={handleUploadStart} // ← Nueva prop
+          onUploadStart={handleUploadStart}
         />
 
         <Button 
           type="submit" 
           variant="contained"
-          disabled={!formData.imageUrl || isUploading}
+          disabled={isUploading}
           fullWidth
           sx={{ mt: 2 }}
         >

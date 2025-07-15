@@ -30,7 +30,7 @@ export const GenericModal: React.FC<GenericModalProps> = ({
   open, 
   onClose, 
   title, 
-  children 
+  children,
 }) => {
   return (
     <Modal

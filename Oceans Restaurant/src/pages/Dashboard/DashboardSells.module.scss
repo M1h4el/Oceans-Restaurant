@@ -3,5 +3,6 @@
 .container {
   padding: 20px;
   max-width: 1200px;
+  min-height: calc(100vh - 300px);
   margin: 0 auto;
 }

@@ -71,8 +71,8 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
           fullPath: storageRef.fullPath,
         });
         setIsUploading(false);
-        onUploadComplete(""); // Notificar error
-        setPreviewUrl(""); // Resetear preview
+        onUploadComplete("");
+        setPreviewUrl("");
       },
       async () => {
         try {

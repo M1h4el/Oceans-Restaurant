@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import styles from "./SideBar.module.scss";
 import { FaCartPlus } from "react-icons/fa";
 import { IconContext } from "react-icons";
+import { fetchData } from "../../utils/fetchData";
+import type { Res_PostInvoice } from "../../types/res_Invoices";
 
 const SideBar = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -70,20 +72,39 @@ const SideBar = () => {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleCheckout = () => {
+  const handleCheckout = async() => {
+
+    const transformedItems = cart.map(item => ({
+    product_id: item.id,
+    quantity: item.quantity
+  }));
+
+
     const invoice = {
-      id: Date.now(),
-      products: cart,
-      total,
-      createdAt: new Date().toISOString(),
+      descripcion: "N/A",
+      status_id: "2",
+      items: transformedItems,
     };
 
-    console.table(333333, invoice.products)
-    localStorage.setItem("invoice", JSON.stringify(invoice));
-    localStorage.removeItem("cart");
-    setCart([]);
-    window.dispatchEvent(new Event("cartUpdated"));
-    alert("Compra realizada ✅");
+    try {
+      
+      const response = await fetchData<Res_PostInvoice>('/invoices', {
+        method: 'POST',
+        body: invoice
+      })
+  
+      if (response.ok || response.status === 201) {
+        localStorage.removeItem("cart");
+        setCart([]);
+        window.dispatchEvent(new Event("cartUpdated"));
+        alert("Compra realizada ✅");
+      }
+      
+    } catch (error) {
+      alert("Error al crear factura");
+      console.error("Error al crear factura", error);
+    }
+
   };
 
   return (

@@ -6,11 +6,12 @@ class InvoiceController {
   async createInvoice(req: Request, res: Response) {
     try {
       const invoiceData: CreateInvoiceDto = req.body;
-      const newInvoice = await invoiceModel.createInvoice(invoiceData);
+      console.log(req.body);
+      await invoiceModel.createInvoice(invoiceData);
       
       res.status(201).json({
         success: true,
-        data: newInvoice
+        message: "Se ha creado la factura satisfactoriamente."
       });
     } catch (error: any) {
       res.status(400).json({

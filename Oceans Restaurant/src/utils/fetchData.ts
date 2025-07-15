@@ -17,7 +17,6 @@ interface FetchResponse<TData = unknown> {
   ok: boolean;
 }
 
-// Variable para controlar el refresco del token
 let isRefreshing = false;
 
 export async function fetchData<TData = unknown, TBody = unknown>(
@@ -59,7 +58,6 @@ export async function fetchData<TData = unknown, TBody = unknown>(
     const apiEndpoint = `${import.meta.env.VITE_API_BASE_URL || ''}/api${endpoint}`;
     const response = await fetch(apiEndpoint, config);
 
-    // Manejo de token expirado
     if (response.status === 401 && !isRefreshing) {
       const errorData = await response.json().catch(() => ({}));
       if (errorData.code === 'TOKEN_EXPIRED') {
@@ -68,7 +66,6 @@ export async function fetchData<TData = unknown, TBody = unknown>(
           const newToken = await refreshToken();
           if (newToken) {
             localStorage.setItem('authToken', newToken);
-            // Reintentar la petición original con el nuevo token
             config.headers = {
               ...config.headers,
               'Authorization': `Bearer ${newToken}`

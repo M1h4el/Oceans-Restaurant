@@ -1,6 +1,8 @@
+import styles from './DashboardSettings.module.scss';
+
 function DashboardSettings() {
   return (
-    <div>DashboardSettings</div>
+    <div className={styles.container}>DashboardSettings</div>
   )
 }
 

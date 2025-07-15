@@ -1,34 +1,47 @@
 // src/services/auth.service.ts
 import jwt from 'jsonwebtoken';
 import { Request, Response } from 'express';
+import userModel from '../models/user.model';
+import { verifyJWT } from '../utils/auth.utils';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_super_seguro';
 
 export const verifyToken = async (req: Request, res: Response) => {
-  const authHeader = req.headers.authorization;
-  
-  console.log(101010, authHeader);
-  if (!authHeader) {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
     return res.status(401).json({ 
       success: false,
       message: 'Token no proporcionado' 
     });
   }
 
-  const token = authHeader.split(' ')[1]; // Extrae el token de "Bearer <token>"
-
   try {
-    // Verifica el token y obtiene el payload decodificado
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = verifyJWT(token); // Usa la función verifyJWT que ya tienes
+    if (!decoded) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Token inválido' 
+      });
+    }
 
-    console.log(1111111111, decoded, token, )
-    
-    // Aquí podrías verificar adicionalmente en la base de datos
-    // si el usuario sigue existiendo/activo
-    
+    // Verifica el usuario en la base de datos (opcional pero recomendado)
+    const user = await userModel.getUserById(Number(decoded.id));
+    if (!user) {
+      return res.status(401).json({ 
+        success: false,
+        error: 'Usuario no encontrado',
+        code: 'USER_NOT_FOUND'
+      });
+    }
+
+    // Devuelve los datos del usuario (sin necesidad de consultar email nuevamente)
     return res.status(200).json({ 
       success: true,
-      user: { id: decoded.userId },
+      user: { 
+        id: decoded.id, 
+        email: decoded.email  // <- Email ya viene del JWT
+      },
       isValid: true
     });
 

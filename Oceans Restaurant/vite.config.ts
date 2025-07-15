@@ -12,10 +12,10 @@ export default defineConfig({
         secure: false
       },
       '/auth': {
-        target: 'http://localhost:3000/api', // Nota el /api adicional
+        target: 'http://localhost:3000/api',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/auth/, '/auth') // Mantiene /auth
+        rewrite: (path) => path.replace(/^\/auth/, '/auth')
       }
     }
   }

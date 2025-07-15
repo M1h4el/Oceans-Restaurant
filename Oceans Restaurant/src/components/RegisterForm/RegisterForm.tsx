@@ -1,24 +1,24 @@
 import styles from './RegisterForm.module.scss';
 import { Box, Button, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { fetchData } from "../../utils/fetchData";
 import { CreateUserDTO } from "../../dtos/Users/CreateUserDTO";
+import { useNavigate } from 'react-router-dom';
 
 function RegisterForm() {
   const [formData, setFormData] = useState<CreateUserDTO>({
     username: "",
     email: "",
     password: "",
-    rol: "seller" // Valor por defecto
+    rol: "seller"
   });
+
+  const navigate = useNavigate();
 
   console.log(11111111, formData);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
-  const navigate = useNavigate();
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -50,7 +50,7 @@ function RegisterForm() {
       
       localStorage.setItem('authToken', response.data.token);
       
-      /* navigate('/dashboard'); */
+      navigate('/dashboard');
       
     } catch (err: any) {
       console.error('Error en registro:', err);

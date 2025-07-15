@@ -45,7 +45,7 @@ const columns = [
   {
     name: "TOTAL",
     selector: (row: Invoice) => row.total,
-    format: (row: Invoice) => `$${row.total.toFixed(2)}`,
+    format: (row: Invoice) => `$${Number(row.total).toFixed(2)}`,
     sortable: true,
     right: true,
   },

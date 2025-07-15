@@ -22,9 +22,15 @@
   .title_section {
     width: 100%;
     height: max-content;
-    h1 {
-      text-align: left;
-      margin-left: 80px;
+    .actions {
+      @include m.flexing(row, flex-start, center);
+      gap: 50px;
+      h1 {
+        color: black;
+        text-align: left;
+        margin-left: 80px;
+      }
+      
     }
   }
 }

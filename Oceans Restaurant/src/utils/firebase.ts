@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getStorage } from 'firebase/storage';
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCRVlm4VDW-2KXzTIumObvMfvYa8puxeKE",
   authDomain: "oceans-restaurant-369ce.firebaseapp.com",
@@ -11,6 +10,5 @@ const firebaseConfig = {
   appId: "1:767502328224:web:f951d78dbe0a662f9244c5"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const storage = getStorage(app);

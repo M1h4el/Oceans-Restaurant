@@ -20,7 +20,7 @@
   .dropdown {
     @include m.flexing(column, flex-start, flex-start);
     position: absolute;
-    top: 100%; // ⭐ Empieza justo debajo del contenedor
+    top: 100%; 
     left: 50%;
     transform: translateX(-84%);
     margin-top: 8px;

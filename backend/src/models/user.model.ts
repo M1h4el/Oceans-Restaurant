@@ -12,7 +12,6 @@ class UserModel {
     try {
       await connection.beginTransaction();
 
-      // 1. Verificar si el usuario ya existe (dentro de la transacción)
       const [existing] = await connection.query(
         "SELECT id FROM usersRES WHERE email = ? LIMIT 1",
         [userData.email]
@@ -22,13 +21,11 @@ class UserModel {
         throw new Error("EMAIL_ALREADY_EXISTS");
       }
 
-      // 2. Hash de la contraseña
       const hashedPassword = await bcrypt.hash(
         userData.password,
         this.SALT_ROUNDS
       );
 
-      // 3. Insertar usuario
       const [result] = await connection.query(
         `INSERT INTO usersRES (user_name, email, password_hash, rol, active) 
              VALUES (?, ?, ?, ?, ?)`,
@@ -43,12 +40,10 @@ class UserModel {
 
       userId = (result as any).insertId;
 
-      // 4. Verificación crítica del ID
       if (!userId) {
         throw new Error("INSERT_FAILED");
       }
 
-      // 5. Obtener usuario recién creado
       const [users] = await connection.query(
         "SELECT id, user_name, email, rol, active FROM usersRES WHERE id = ? LIMIT 1",
         [userId]
@@ -63,7 +58,6 @@ class UserModel {
     } catch (error) {
       await connection.rollback();
 
-      // Manejo específico de errores conocidos
       if (error instanceof Error) {
         if (error.message === "EMAIL_ALREADY_EXISTS") {
           throw new Error("El email ya está registrado");
@@ -83,12 +77,11 @@ class UserModel {
 
   async getUserById(id: number): Promise<User | null> {
     try {
-      const [rows] = await db.query(
+      const rows = await db.query(
         "SELECT id, user_name, email, rol, active FROM usersRES WHERE id = ? LIMIT 1",
         [id]
       );
 
-      // Verificación mejorada del resultado
       if (!Array.isArray(rows)) {
         console.error("Resultado inesperado de getUserById:", rows);
         return null;
@@ -105,10 +98,12 @@ class UserModel {
     email: string
   ): Promise<(User & { password_hash: string }) | null> {
     try {
-      const [rows] = await db.query(
+      const rows = await db.query(
         "SELECT * FROM usersRES WHERE email = ? LIMIT 1",
         [email]
       );
+
+      console.log(222, rows)
 
       if (!Array.isArray(rows) || rows.length === 0) {
         return null;
@@ -132,7 +127,9 @@ class UserModel {
 
   async verifyPassword(email: string, password: string): Promise<boolean> {
     const user = await this.getUserByEmail(email);
+    console.log(111, user)
     if (!user) return false;
+
 
     return bcrypt.compare(password, user.password_hash);
   }

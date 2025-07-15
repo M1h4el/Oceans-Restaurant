@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { IconContext } from "react-icons";
 import styles from "./Icons.module.scss";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../Context/AuthContext";
 
 interface IconInfoProps {
   setScreen: React.Dispatch<React.SetStateAction<string>>;
@@ -26,6 +27,8 @@ const IconInfo: React.FC<IconInfoProps> = ({
   const [open, setOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const {logout} = useAuth()
 
   const handleClick = () => {
     if (displayable) {
@@ -64,7 +67,7 @@ const IconInfo: React.FC<IconInfoProps> = ({
           <div className={styles.dropdown}>
             <a href="#">Opción 1</a>
             <a href="#">Ver Perfil</a>
-            <a href="#">Cerrar Sesión</a>
+            <a onClick={() => logout()}>Cerrar Sesión</a>
           </div>
         )}
       </div>

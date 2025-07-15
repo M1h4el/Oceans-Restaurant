@@ -10,10 +10,6 @@ import DashboardProfile from './pages/Dashboard/DashboardProfile'
 
 function App() {
 
- /*  const [userName, setUserName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState(''); */
-
   return (
     <>
     <Routes>
@@ -28,7 +24,6 @@ function App() {
         </Route>
       </Route>
 
-      {/* Redirección para rutas no encontradas */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </>
