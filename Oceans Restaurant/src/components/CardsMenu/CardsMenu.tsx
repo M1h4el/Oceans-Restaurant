@@ -6,7 +6,7 @@ import { GenericModal } from "../Modal/Modal";
 import { ProductForm } from "../Modal/ProductForm";
 import { fetchData } from "../../utils/fetchData";
 import type { Dish } from "../../types/dishes";
-import type { BaseData } from "../../types/baseData"
+import type { BaseData } from "../../types/baseData";
 
 type GetMenuResponse = {
   success: boolean;
@@ -18,12 +18,21 @@ type ApiResponse = {
   data: GetMenuResponse | { message: string };
 };
 
+type InfoUser = {
+  active: number;
+  email: string;
+  id: number;
+  rol: "owner" | "seller";
+  user_name: string;
+} | null;
+
 function CardsMenu() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [selectedTitles, setSelectedTitles] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [roleUser, setRoleUser] = useState<"seller" | "owner">("seller");
 
   const dishTitles = useMemo(
     () => [...new Set(dishes.map((dish) => dish.name))],
@@ -57,16 +66,21 @@ function CardsMenu() {
       }
     };
 
+    const infoString = localStorage.getItem("info");
+    const info: InfoUser = infoString ? JSON.parse(infoString) : null;
+
+    setRoleUser(info?.rol ?? "seller");
+
     getDishes();
   }, []);
 
   const handleEditingModeOn = () => {
     setIsEditing(true);
-  }
+  };
 
   const handleEditingModeOff = () => {
     setIsEditing(false);
-  }
+  };
 
   const handleSubmit = async (productData: BaseData) => {
     try {
@@ -104,7 +118,7 @@ function CardsMenu() {
     <div className={styles.container}>
       <div className={styles.filterContainer}>
         <Autocomplete
-          sx={{ width: '800px' }}
+          sx={{ width: "800px" }}
           multiple
           disabled={isLoading}
           options={dishTitles}
@@ -124,45 +138,47 @@ function CardsMenu() {
             ))
           }
         />
-        <div className={styles.list_buttons}>
-          <div className={styles.div_button}>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => setIsModalOpen(true)}
-              disabled={isLoading || isEditing}
-            >
-              Agregar Producto
-            </Button>
+        {roleUser === "owner" ? (
+          <div className={styles.list_buttons}>
+            <div className={styles.div_button}>
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => setIsModalOpen(true)}
+                disabled={isLoading || isEditing}
+              >
+                Agregar Producto
+              </Button>
+            </div>
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                disabled={isEditing}
+                onClick={handleEditingModeOn}
+              >
+                Modo edición
+              </Button>
+            </div>
+            <div>
+              <Button
+                variant="contained"
+                color="error"
+                disabled={!isEditing}
+                onClick={handleEditingModeOff}
+              >
+                Cancelar
+              </Button>
+            </div>
           </div>
-          <div>
-            <Button
-            variant="contained"
-            color="primary"
-            disabled={isEditing}
-            onClick={handleEditingModeOn}
-            >
-              Modo edición
-            </Button>
-          </div>
-          <div>
-            <Button
-            variant="contained"
-            color="error"
-            disabled={!isEditing}
-            onClick={handleEditingModeOff}
-            >
-              Cancelar
-            </Button>
-          </div>
-        </div>
+        ) : null}
 
         <GenericModal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title="Nuevo Producto"
         >
-          <ProductForm onSubmit={handleSubmit} type="POST"/>
+          <ProductForm onSubmit={handleSubmit} type="POST" />
         </GenericModal>
       </div>
 
@@ -171,7 +187,11 @@ function CardsMenu() {
       ) : (
         <div className={styles.menu}>
           {filteredDishes.map((dish) => (
-            <CardDish key={`${dish.id}-${dish.name}`} dish={dish} isEditing={isEditing}/>
+            <CardDish
+              key={`${dish.id}-${dish.name}`}
+              dish={dish}
+              isEditing={isEditing}
+            />
           ))}
         </div>
       )}

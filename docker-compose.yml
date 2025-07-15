@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: mi-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    restart: always
+
+  frontend:
+    build:
+      context: ./Oceans Restaurant
+    container_name: mi-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always

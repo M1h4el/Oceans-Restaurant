@@ -46,6 +46,7 @@ function LogBar() {
       console.log("response", response)
 
       localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('info', JSON.stringify(response.data.user))
       navigate('/dashboard');
 
     } catch (err: any) {

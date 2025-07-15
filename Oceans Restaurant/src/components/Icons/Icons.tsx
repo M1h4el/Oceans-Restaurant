@@ -65,7 +65,8 @@ const IconInfo: React.FC<IconInfoProps> = ({
 
         {displayable && open && typeButton !== "link" && (
           <div className={styles.dropdown}>
-            <a href="#">Opción 1</a>
+            <a href="#">Herramientas</a>
+            <a href="#">Preferencias</a>
             <a href="#">Ver Perfil</a>
             <a onClick={() => logout()}>Cerrar Sesión</a>
           </div>
